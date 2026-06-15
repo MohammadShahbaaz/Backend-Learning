@@ -15,12 +15,25 @@ class BankAccount():
     def get_balance(self):
         return f"Current Balance is : {self.balance}"
     
+
+class SavingAccount(BankAccount):
+    def __init__(self, owner, balance,interest_rate):
+        super().__init__(owner, balance)
+        self.interest_rate = interest_rate
+
+    def add_interest(self):
+        interest = self.balance * self.interest_rate/100
+        self.balance += interest
+
+    
     
 
 owner1 = BankAccount("Shahbaaz",100000)
+owner2 = SavingAccount("Vegeta",500000,5)
 
-owner1.deposit(4000)
-owner1.withdraw(10000)
-print(owner1.get_balance())
 
-print(owner1.withdraw(300000))
+print(owner2.get_balance())
+
+owner2.add_interest()
+
+print(owner2.get_balance())
