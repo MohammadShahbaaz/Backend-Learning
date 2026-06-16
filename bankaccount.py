@@ -22,8 +22,8 @@ class SavingAccount(BankAccount):
         self.interest_rate = interest_rate
 
     def add_interest(self):
-        interest = self.balance * self.interest_rate/100
-        self.balance += interest
+        self.balance += self.balance * self.interest_rate/100
+        
 
     
     
