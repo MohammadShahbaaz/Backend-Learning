@@ -3,12 +3,10 @@ class Employee():
         self.__salary = salary
     
     def get_salary(self):
-        print(f"Your salary is :{self.__salary}")
+        print(f"Your salary is : {self.__salary}")
     
     def give_raise(self,percentage):
-        self.give_raise = percentage
-
-        self.__salary += self.__salary * self.give_raise/100
+        self.__salary += self.__salary * percentage/100
     
 class Manager(Employee):
     pass
