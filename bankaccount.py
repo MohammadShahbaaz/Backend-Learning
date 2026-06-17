@@ -1,3 +1,6 @@
+class InsufficientFundsError(Exception):
+    pass
+
 class BankAccount():
     def __init__(self,owner,balance):
         self.owner = owner
@@ -7,14 +10,22 @@ class BankAccount():
         self.balance += amount
     
     def withdraw(self,amount):
-        if amount>self.balance:
-            return f"Insufficient Balance, Current Balance is : {self.balance}"
-        else:
+        try:
+            if amount>self.balance:
+                raise InsufficientFundsError(
+                    f"Insufficient Balance. Current balance is:{self.balance}"
+                )
+        
             self.balance -= amount
+
+        except InsufficientFundsError:
+            raise
+        finally:
+            print(f"Withdrawal attempt logged for {self.owner}.")
+    
     
     def get_balance(self):
         return f"Current Balance is : {self.balance}"
-    
 
 class SavingAccount(BankAccount):
     def __init__(self, owner, balance,interest_rate):
@@ -26,14 +37,7 @@ class SavingAccount(BankAccount):
         
 
     
-    
+owner1 = BankAccount("Shahbaaz", 100000)
 
-owner1 = BankAccount("Shahbaaz",100000)
-owner2 = SavingAccount("Vegeta",500000,5)
-
-
-print(owner2.get_balance())
-
-owner2.add_interest()
-
-print(owner2.get_balance())
+owner1.withdraw(20000)
+print(owner1.get_balance())
