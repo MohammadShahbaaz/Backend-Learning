@@ -18,8 +18,8 @@ class BankAccount():
         
             self.balance -= amount
 
-        except InsufficientFundsError:
-            raise
+        except InsufficientFundsError as e:
+            print(f"Error: {e}")
         finally:
             print(f"Withdrawal attempt logged for {self.owner}.")
     
@@ -39,5 +39,5 @@ class SavingAccount(BankAccount):
     
 owner1 = BankAccount("Shahbaaz", 100000)
 
-owner1.withdraw(20000)
+owner1.withdraw(200000)
 print(owner1.get_balance())
