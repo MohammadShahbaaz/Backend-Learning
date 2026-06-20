@@ -29,6 +29,27 @@ def show_students():
     for student in students:
         print(f"{student["Name"]} - {student["Marks"]}")
 
+def show_grade_A_students():
+    a = [m for m in students if m["Marks"] >= 90]
+    if not a:
+        print("No grade A students found")
+        return
+    for m in a:
+        print(f"{m["Name"]} - {m["Marks"]}")
+
+def students_above(marks):
+    for student in students:
+        if student["Marks"] > marks:
+            yield student
+
+def show_students_above(marks):
+    found = False
+    for s in students_above(marks):
+        found = True
+        print(f"{s['Name']} - {s['Marks']}")
+    if not found:
+        print("No students found above that mark")
+
 def search_student():
     sname = input("Enter Student name you wanna search : ")
     found = False
