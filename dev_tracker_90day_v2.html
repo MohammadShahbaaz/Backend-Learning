@@ -1,0 +1,432 @@
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f0f13;--surface:#17171d;--surface2:#1e1e27;--border:#2a2a36;--border2:#363644;
+  --text:#e8e8f0;--muted:#7a7a8e;--hint:#4a4a5e;
+  --accent:#7c6af7;--accent-soft:#2a2545;--accent-border:#4a3f9e;
+  --green:#3ecf8e;--green-soft:#0f2e20;
+  --amber:#f59e0b;--amber-soft:#2a1f00;
+  --red:#f87171;--red-soft:#2a0f0f;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+.app{display:flex;min-height:100vh}
+.sidebar{width:260px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);padding:24px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{width:680px;padding:28px 32px;flex-shrink:0;overflow-y:auto}
+.spacer{flex:1}
+.sidebar-header{padding:0 20px 16px;border-bottom:1px solid var(--border);margin-bottom:12px}
+.sidebar-logo{font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.5px;text-transform:uppercase;font-family:var(--mono)}
+.sidebar-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.phase-label{font-size:10px;font-weight:600;color:var(--hint);text-transform:uppercase;letter-spacing:1px;padding:8px 20px 4px}
+.week-btn{display:flex;align-items:center;gap:10px;width:100%;padding:8px 20px;background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:13px;cursor:pointer;text-align:left;border-left:2px solid transparent;transition:all .15s}
+.week-btn:hover{background:var(--surface2);color:var(--text)}
+.week-btn.active{background:var(--accent-soft);color:var(--accent);border-left-color:var(--accent)}
+.week-dot{width:6px;height:6px;border-radius:50%;background:var(--border2);flex-shrink:0}
+.week-btn.done .week-dot{background:var(--green)}
+.week-btn.active .week-dot{background:var(--accent)}
+.week-progress-mini{margin-left:auto;font-size:10px;font-family:var(--mono);color:var(--hint)}
+.week-btn.active .week-progress-mini{color:var(--accent)}
+.week-header{margin-bottom:20px}
+.week-tag{font-size:11px;font-weight:600;font-family:var(--mono);color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.week-title{font-size:20px;font-weight:600;margin-bottom:2px}
+.week-desc{font-size:13px;color:var(--muted);margin-bottom:12px}
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.stat-num{font-size:20px;font-weight:600;font-family:var(--mono);color:var(--accent)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:2px}
+.schedule-banner{padding:10px 14px;border-radius:8px;font-size:12px;font-weight:500;margin-bottom:18px;display:flex;align-items:center;gap:8px;border-left:3px solid transparent}
+.schedule-banner.behind{background:var(--red-soft);border:1px solid #5a1a1a;border-left-color:var(--red);color:var(--red)}
+.schedule-banner.ahead{background:var(--green-soft);border:1px solid #1a4a30;border-left-color:var(--green);color:var(--green)}
+.schedule-banner.ontrack{background:var(--accent-soft);border:1px solid var(--accent-border);border-left-color:var(--accent);color:var(--accent)}
+.cal-section{margin-bottom:20px}
+.cal-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-family:var(--mono)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-day{border-radius:6px;padding:5px 3px;text-align:center;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.cal-day .cal-date{font-size:10px;font-family:var(--mono);color:var(--hint);margin-bottom:2px}
+.cal-day .cal-dnum{font-size:12px;font-weight:500;color:var(--muted)}
+.cal-day.cal-past{background:var(--surface)}
+.cal-day.cal-past .cal-dnum{color:var(--text)}
+.cal-day.cal-today{background:var(--accent-soft);border-color:var(--accent-border)}
+.cal-day.cal-today .cal-dnum{color:var(--accent)}
+.cal-day.cal-today .cal-date{color:var(--accent)}
+.cal-day.cal-future{background:var(--surface2);opacity:.6}
+.cal-day.cal-done{background:var(--green-soft);border-color:#1a4a30}
+.cal-day.cal-done .cal-dnum{color:var(--green)}
+.cal-day.cal-done .cal-date{color:#3ecf8e99}
+.cal-day.cal-behind{background:var(--red-soft);border-color:#5a1a1a}
+.cal-day.cal-behind .cal-dnum{color:var(--red)}
+.cal-day.cal-behind .cal-date{color:#f8717199}
+.cal-day.cal-active-sel{box-shadow:0 0 0 2px var(--accent)}
+.cal-day.cal-done.cal-active-sel{box-shadow:0 0 0 2px var(--green)}
+.cal-day:hover{border-color:var(--border2);opacity:1}
+.cal-dot{width:4px;height:4px;border-radius:50%;margin:2px auto 0;background:var(--hint)}
+.cal-day.cal-done .cal-dot{background:var(--green)}
+.cal-day.cal-behind .cal-dot{background:var(--red)}
+.cal-day.cal-today .cal-dot{background:var(--accent)}
+.progress-wrap{margin-bottom:20px}
+.progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px}
+.progress-label span:last-child{font-family:var(--mono);color:var(--accent)}
+.progress-bar{height:5px;background:var(--surface2);border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:99px;transition:width .4s}
+.progress-fill.complete{background:linear-gradient(90deg,var(--green),#34d399)}
+.day-tabs{display:flex;gap:5px;margin-bottom:18px;flex-wrap:wrap}
+.day-tab{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:12px;font-family:var(--mono);cursor:pointer;transition:all .15s}
+.day-tab:hover{border-color:var(--border2);color:var(--text)}
+.day-tab.active{border-color:var(--accent-border);background:var(--accent-soft);color:var(--accent)}
+.day-tab.day-done{border-color:#1a3d2e;background:var(--green-soft);color:var(--green)}
+.day-tab.day-behind{border-color:#5a1a1a;background:var(--red-soft);color:var(--red)}
+.day-tab.day-today{border-color:var(--accent-border)}
+.day-num-h{font-size:11px;font-family:var(--mono);color:var(--muted);margin-bottom:3px}
+.day-title-main{font-size:17px;font-weight:600;margin-bottom:6px}
+.day-focus-tag{display:inline-block;font-size:11px;padding:3px 10px;border-radius:4px;background:var(--amber-soft);color:var(--amber);border:1px solid #3a2800;font-family:var(--mono)}
+.day-date-badge{display:inline-block;font-size:11px;padding:3px 10px;border-radius:4px;background:var(--surface2);color:var(--muted);border:1px solid var(--border);font-family:var(--mono);margin-left:8px}
+.block-section{margin-bottom:10px}
+.block-time{font-size:11px;font-family:var(--mono);color:var(--hint);margin-bottom:5px;padding-left:2px}
+.task-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;border-left:3px solid var(--border)}
+.task-card.blue-l{border-left-color:#3b6fcf}
+.task-card.teal-l{border-left-color:#1a9e70}
+.task-card.purple-l{border-left-color:#7c6af7}
+.task-card.amber-l{border-left-color:#d97706}
+.task-card.gray-l{border-left-color:var(--border2);background:var(--surface2)}
+.task-card.red-l{border-left-color:#dc2626}
+.task-card.done-card{background:#0d1a0d;border-color:#1a3d2e;border-left-color:var(--green)!important}
+.task-top{display:flex;align-items:flex-start;gap:10px}
+.task-checkbox{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);background:var(--surface2);cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .15s}
+.task-checkbox:hover{border-color:var(--accent)}
+.task-checkbox.checked{background:var(--green);border-color:var(--green);color:#0a1a0a}
+.task-body{flex:1}
+.task-name{font-size:13px;font-weight:500;margin-bottom:3px}
+.task-card.done-card .task-name{color:var(--muted);text-decoration:line-through}
+.task-desc{font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:6px}
+.task-card.done-card .task-desc{color:var(--hint)}
+.tags{display:flex;gap:5px;flex-wrap:wrap}
+.tag{font-size:10px;font-family:var(--mono);padding:2px 7px;border-radius:4px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.checkpoint-box{margin-top:16px;padding:12px 14px;background:var(--green-soft);border:1px solid #1a3d2e;border-radius:10px}
+.cp-label{font-size:10px;font-weight:600;color:var(--green);text-transform:uppercase;letter-spacing:1px;font-family:var(--mono);margin-bottom:3px}
+.cp-text{font-size:12px;color:#86efac}
+.day-complete-banner{display:none;margin-top:14px;padding:12px 14px;background:var(--accent-soft);border:1px solid var(--accent-border);border-radius:10px;font-size:13px;color:var(--accent);text-align:center;font-weight:500}
+.day-complete-banner.show{display:block}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar"></aside>
+  <main class="main" id="main"></main>
+  <div class="spacer"></div>
+</div>
+
+<script>
+const START_DATE=new Date('2026-06-12');
+START_DATE.setHours(0,0,0,0);
+
+function getToday(){
+  const d=new Date();
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function dateForGlobalDay(n){
+  const d=new Date(START_DATE);
+  d.setDate(d.getDate()+n);
+  return d;
+}
+
+function fmtDate(d){
+  return d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+}
+
+const PLAN=[
+  {phase:"Phase 1 — Foundation",weeks:[
+    {id:"w1",title:"Python solid ground",desc:"OOP, error handling, file I/O",days:[
+      {title:"Python OOP: classes & objects",focus:"Split day",tasks:[
+        {id:"w1d1t1",time:"10:00–10:20",color:"blue-l",name:"Learn: what is OOP and why",desc:"Read Python docs on classes. Understand class, object, __init__, self. Max 20 mins.",tags:["docs.python.org"]},
+        {id:"w1d1t2",time:"10:20–11:20",color:"teal-l",name:"Code: build your first Student class",desc:"Create student.py. Build Student class with name, age, marks. Add get_grade() method. Create 3 student objects.",tags:["student.py","__init__"]},
+        {id:"w1d1t3",time:"11:20–12:00",color:"purple-l",name:"Extend: add __str__ and update_marks()",desc:"Add update_marks() method. Add __str__ for readable output. Test everything.",tags:["__str__","instance methods"]},
+        {id:"w1d1t4",time:"4:30–5:30",color:"teal-l",name:"Code: BankAccount class from scratch",desc:"Build BankAccount — owner, balance. Methods: deposit(), withdraw() (no negative balance), get_balance().",tags:["bank_account.py"]},
+        {id:"w1d1t5",time:"5:30–6:00",color:"amber-l",name:"Commit to GitHub",desc:"Push both files. Write notes: what I learned, what confused me.",tags:["git commit"]}
+      ],checkpoint:"Can you build a class with attributes and methods from memory?"},
+      {title:"Inheritance & encapsulation",focus:"Free all day",tasks:[
+        {id:"w1d2t1",time:"10:00–10:20",color:"blue-l",name:"Learn: inheritance in Python",desc:"Read about parent class, child class, super(). 20 mins max.",tags:["inheritance","super()"]},
+        {id:"w1d2t2",time:"10:20–11:30",color:"teal-l",name:"Code: Animal → Dog, Cat hierarchy",desc:"Build Animal parent with name, sound, speak(). Build Dog and Cat child classes. Override speak(). Add fetch() only in Dog.",tags:["animals.py","method overriding"]},
+        {id:"w1d2t3",time:"11:30–12:00",color:"purple-l",name:"Extend: SavingsAccount from BankAccount",desc:"Create SavingsAccount child class with interest_rate and add_interest(). Use super().__init__() properly.",tags:["child class","super()"]},
+        {id:"w1d2t4",time:"2:00–2:15",color:"blue-l",name:"Learn: encapsulation — private attributes",desc:"Read about _protected and __private in Python. Understand name mangling. 15 mins.",tags:["__private","_protected"]},
+        {id:"w1d2t5",time:"2:15–3:15",color:"teal-l",name:"Code: Employee class with private salary",desc:"Build Employee with __salary private attribute. Add get_salary() and give_raise(percent). Add Manager child class.",tags:["employee.py","__private"]},
+        {id:"w1d2t6",time:"3:15–3:30",color:"amber-l",name:"Commit + notes",desc:"Push. Answer: what is the difference between overriding and overloading?",tags:["git commit"]}
+      ],checkpoint:"Can you build a 2-level class hierarchy from scratch?"},
+      {title:"Error handling & decorators",focus:"Free all day",tasks:[
+        {id:"w1d3t1",time:"10:00–10:20",color:"blue-l",name:"Learn: try/except/finally",desc:"Read Python error handling. Understand try, except, finally, raise, custom exceptions. 20 mins.",tags:["try","except","finally"]},
+        {id:"w1d3t2",time:"10:20–11:20",color:"teal-l",name:"Code: add error handling to BankAccount",desc:"Add custom InsufficientFundsError. Raise it in withdraw(). Wrap in try/except. Add finally to log every attempt.",tags:["InsufficientFundsError","custom exception"]},
+        {id:"w1d3t3",time:"11:20–12:00",color:"purple-l",name:"Code: validate Employee inputs",desc:"Add input validation. Raise ValueError if salary negative. Raise TypeError if name not a string.",tags:["ValueError","TypeError","raise"]},
+        {id:"w1d3t4",time:"2:00–2:15",color:"blue-l",name:"Learn: decorators",desc:"Read about @property, @staticmethod, @classmethod. 15 mins.",tags:["@property","@staticmethod"]},
+        {id:"w1d3t5",time:"2:15–3:15",color:"teal-l",name:"Code: add @property to Employee",desc:"Refactor Employee — salary as @property with getter/setter. Add @staticmethod employment_type(). Add @classmethod from_dict().",tags:["@property","@classmethod"]},
+        {id:"w1d3t6",time:"3:15–3:30",color:"amber-l",name:"Commit + notes",desc:"Push. Answer: when would I use @classmethod vs @staticmethod?",tags:["git commit"]}
+      ],checkpoint:"Can you add a custom exception and @property to any class without looking up syntax?"},
+      {title:"File I/O & JSON — CLI tool",focus:"Free all day",tasks:[
+        {id:"w1d4t1",time:"10:00–10:20",color:"blue-l",name:"Learn: file I/O and JSON module",desc:"Read about open(), read/write modes, json.dumps/loads/dump/load. 20 mins.",tags:["json module","with open()"]},
+        {id:"w1d4t2",time:"10:20–12:00",color:"teal-l",name:"Code: Student Records CLI tool",desc:"Build student_records.py: add student, save to JSON, load on startup, show class average.",tags:["student_records.py","json.dump/load"]},
+        {id:"w1d4t3",time:"2:00–3:00",color:"purple-l",name:"Extend: add delete + search",desc:"Add search by name. Add delete by name. Handle not-found gracefully.",tags:["search","delete"]},
+        {id:"w1d4t4",time:"3:00–3:30",color:"amber-l",name:"Commit + notes",desc:"Push. Notes: what would you do differently?",tags:["git commit"]}
+      ],checkpoint:"A working CLI app that reads/writes to a JSON file."},
+      {title:"Modules, packages & clean code",focus:"Free all day",tasks:[
+        {id:"w1d5t1",time:"10:00–10:20",color:"blue-l",name:"Learn: modules and packages",desc:"Read about Python import, creating modules, __init__.py, relative imports. 20 mins.",tags:["import","__init__.py"]},
+        {id:"w1d5t2",time:"10:20–12:00",color:"teal-l",name:"Refactor: split student CLI into modules",desc:"Restructure into models/student.py, storage/json_storage.py, main.py. Fix all imports.",tags:["models/","storage/","__init__.py"]},
+        {id:"w1d5t3",time:"2:00–2:15",color:"blue-l",name:"Learn: list comprehensions & generators",desc:"Read about list comprehensions and yield. 15 mins.",tags:["list comprehension","yield"]},
+        {id:"w1d5t4",time:"2:15–3:15",color:"teal-l",name:"Code: filtering + generator",desc:"Add 'show grade A students' with list comprehension. Add generator students_above(marks).",tags:["list comprehension","generator"]},
+        {id:"w1d5t5",time:"3:15–3:30",color:"amber-l",name:"Commit + notes",desc:"Push. Answer: difference between list comprehension and a generator?",tags:["git commit"]}
+      ],checkpoint:"Project is split into multiple files with clean imports."},
+      {title:"Capstone: Library Management System",focus:"Free all day — build only",tasks:[
+        {id:"w1d6t1",time:"9:00–10:00",color:"gray-l",name:"Plan on paper first",desc:"Sketch what classes you need. Write it down. Don't code yet.",tags:["planning"]},
+        {id:"w1d6t2",time:"10:00–12:30",color:"teal-l",name:"Build: Library Management CLI",desc:"Book class, Member class, Library class. Methods: add_book(), register_member(), borrow_book(), return_book(). JSON persistence.",tags:["models/book.py","library.py","main.py"]},
+        {id:"w1d6t3",time:"2:00–3:30",color:"purple-l",name:"Polish: error handling + edge cases",desc:"Book already borrowed? Member not found? JSON missing on first run? Custom exceptions for all.",tags:["BookNotAvailableError","edge cases"]},
+        {id:"w1d6t4",time:"3:30–4:00",color:"amber-l",name:"Commit + write README",desc:"Push to GitHub. Write README: what it does, how to run it, what classes it has.",tags:["README.md"]}
+      ],checkpoint:"A fully working Library CLI you built alone."},
+      {title:"Review, gaps & week checkpoint",focus:"Free all day — consolidate",tasks:[
+        {id:"w1d7t1",time:"10:00–11:00",color:"blue-l",name:"Re-read all your daily notes",desc:"Go through each day's notes. Fix anything you marked confused me.",tags:["review"]},
+        {id:"w1d7t2",time:"11:00–12:30",color:"teal-l",name:"Code from memory: rebuild Student class",desc:"Close everything. Rebuild Student class with inheritance, @property, error handling, JSON. No reference.",tags:["memory_test.py"]},
+        {id:"w1d7t3",time:"2:00–3:00",color:"purple-l",name:"3 OOP problems on HackerRank",desc:"Go to HackerRank Python OOP section. Solve 3 problems.",tags:["hackerrank.com"]},
+        {id:"w1d7t4",time:"3:00–3:30",color:"blue-l",name:"Preview Week 2",desc:"Read the Week 2 plan. Write 3 things you don't know yet.",tags:["week 2 prep"]},
+        {id:"w1d7t5",time:"3:30–4:00",color:"red-l",name:"Honest self-assessment",desc:"Can I build class hierarchy from memory? Handle errors? Save/load with JSON? All yes = Week 2.",tags:["self-assessment"]}
+      ],checkpoint:"You can rebuild Student class with OOP, error handling, and JSON from memory."}
+    ]},
+    {id:"w2",title:"SQL & databases",desc:"PostgreSQL, joins, indexes — connect from Python",days:[
+      {title:"PostgreSQL setup + basic queries",focus:"Free all day",tasks:[{id:"w2d1t1",time:"10:00–10:30",color:"blue-l",name:"Install PostgreSQL + setup",desc:"Install PostgreSQL. Create practice_db. Connect via psql.",tags:["postgresql"]},{id:"w2d1t2",time:"10:30–12:00",color:"teal-l",name:"Code: create tables and insert data",desc:"Create students table. INSERT 10 rows. Practice SELECT, WHERE, ORDER BY, LIMIT.",tags:["CREATE TABLE","SELECT"]},{id:"w2d1t3",time:"2:00–3:30",color:"purple-l",name:"Practice: 10 SQL queries",desc:"Queries: above 70 marks, youngest, count per grade, average, update, delete.",tags:["SELECT","COUNT","UPDATE"]},{id:"w2d1t4",time:"3:30–4:00",color:"amber-l",name:"Notes + commit",desc:"Save SQL queries. Push to GitHub.",tags:["git commit"]}],checkpoint:"Can you write SELECT, INSERT, UPDATE, DELETE without docs?"},
+      {title:"JOINs and relationships",focus:"Free all day",tasks:[{id:"w2d2t1",time:"10:00–10:20",color:"blue-l",name:"Learn: JOINs",desc:"Read about PRIMARY KEY, FOREIGN KEY, INNER JOIN, LEFT JOIN. 20 mins.",tags:["JOIN"]},{id:"w2d2t2",time:"10:20–12:00",color:"teal-l",name:"Code: courses and enrollments",desc:"Create courses and enrollments tables. Write JOIN queries.",tags:["INNER JOIN","LEFT JOIN"]},{id:"w2d2t3",time:"2:00–3:30",color:"purple-l",name:"Practice: complex JOINs",desc:"Students in 2+ courses, courses with no students, most popular course.",tags:["GROUP BY","HAVING"]},{id:"w2d2t4",time:"3:30–4:00",color:"amber-l",name:"Notes + commit",desc:"Push. Difference between INNER JOIN and LEFT JOIN in your own words.",tags:["git commit"]}],checkpoint:"Can you write a 3-table JOIN query from scratch?"},
+      {title:"psycopg2 — Python meets PostgreSQL",focus:"Free all day",tasks:[{id:"w2d3t1",time:"10:00–10:20",color:"blue-l",name:"Learn: psycopg2",desc:"pip install psycopg2-binary. Read quickstart docs. 20 mins.",tags:["psycopg2"]},{id:"w2d3t2",time:"10:20–12:00",color:"teal-l",name:"Code: Python CRUD script",desc:"Write db.py with add_student(), get_all_students(), update_marks(), delete_student().",tags:["db.py","fetchall()"]},{id:"w2d3t3",time:"2:00–3:30",color:"purple-l",name:"Upgrade: context manager",desc:"Refactor to use context manager. Add error handling around all DB calls.",tags:["context manager"]},{id:"w2d3t4",time:"3:30–4:00",color:"amber-l",name:"Notes + commit",desc:"Push. Why do we need commit() after INSERT/UPDATE/DELETE?",tags:["git commit"]}],checkpoint:"Can you write Python CRUD for a PostgreSQL table?"},
+      {title:"Indexes, constraints & data integrity",focus:"Free all day",tasks:[{id:"w2d4t1",time:"10:00–10:20",color:"blue-l",name:"Learn: indexes and constraints",desc:"Read CREATE INDEX, UNIQUE, NOT NULL, CHECK. 20 mins.",tags:["CREATE INDEX"]},{id:"w2d4t2",time:"10:20–12:00",color:"teal-l",name:"Code: add constraints",desc:"UNIQUE on email. NOT NULL on name. CHECK marks 0-100. Index on marks.",tags:["ALTER TABLE"]},{id:"w2d4t3",time:"2:00–3:30",color:"purple-l",name:"Practice: 10 HackerRank SQL",desc:"10 Easy/Medium SQL problems focusing on JOINs and aggregations.",tags:["hackerrank SQL"]},{id:"w2d4t4",time:"3:30–4:00",color:"amber-l",name:"Notes + commit",desc:"Push. When would you add an index vs not?",tags:["git commit"]}],checkpoint:"Can you design a table with proper constraints?"},
+      {title:"Database design — schema planning",focus:"Free all day",tasks:[{id:"w2d5t1",time:"10:00–10:30",color:"blue-l",name:"Learn: normalization",desc:"Read about 1NF, 2NF, 3NF conceptually. 30 mins.",tags:["normalization"]},{id:"w2d5t2",time:"10:30–12:00",color:"teal-l",name:"Design: EduNest schema",desc:"Tables: users, courses, enrollments, lessons, progress. Write CREATE TABLE SQL.",tags:["edunest_schema.sql"]},{id:"w2d5t3",time:"2:00–3:30",color:"purple-l",name:"Code: create schema + seed",desc:"Run schema SQL. Insert 5 users, 3 courses, enrollments. Verify with queries.",tags:["seed data"]},{id:"w2d5t4",time:"3:30–4:00",color:"amber-l",name:"Notes + commit",desc:"Push schema. What is a foreign key and why does it matter?",tags:["git commit"]}],checkpoint:"Can you design a 5-table schema for a real app?"},
+      {title:"Capstone: Student DB CLI with PostgreSQL",focus:"Free all day",tasks:[{id:"w2d6t1",time:"10:00–12:30",color:"teal-l",name:"Rebuild student CLI using PostgreSQL",desc:"Replace all JSON with PostgreSQL via psycopg2.",tags:["psycopg2"]},{id:"w2d6t2",time:"2:00–3:30",color:"purple-l",name:"Add: enroll in courses",desc:"Add courses table and enrollments. CLI: create course, enroll student, show courses.",tags:["JOINs"]},{id:"w2d6t3",time:"3:30–4:00",color:"amber-l",name:"Commit + README",desc:"Push. Update README with DB schema and setup instructions.",tags:["README"]}],checkpoint:"Your CLI uses real PostgreSQL. No JSON files anywhere."},
+      {title:"Review + Week 2 checkpoint",focus:"Free all day",tasks:[{id:"w2d7t1",time:"10:00–11:00",color:"blue-l",name:"Re-read all Week 2 notes",desc:"Go through all notes. Clarify anything still confusing.",tags:["review"]},{id:"w2d7t2",time:"11:00–12:30",color:"teal-l",name:"Write 10 SQL queries from memory",desc:"SELECT with WHERE, JOIN two tables, GROUP BY with HAVING, subquery, CREATE TABLE.",tags:["memory test"]},{id:"w2d7t3",time:"2:00–3:00",color:"purple-l",name:"5 more HackerRank SQL",desc:"Medium difficulty. Push yourself.",tags:["hackerrank medium"]},{id:"w2d7t4",time:"3:00–3:30",color:"red-l",name:"Honest checkpoint",desc:"JOINs from memory? Python CRUD for PostgreSQL? Simple schema? All yes = Week 3.",tags:["self-assessment"]}],checkpoint:"Write JOIN queries and Python CRUD for PostgreSQL entirely from memory."}
+    ]},
+    {id:"w3",title:"FastAPI basics",desc:"REST, first API, Pydantic, JWT auth",days:Array(7).fill(null).map((_,i)=>({title:`FastAPI Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w3d${i+1}t1`,time:"10:00–1:00",color:"teal-l",name:`Follow Week 3 Day ${i+1} plan`,desc:"Refer to the main 90-day roadmap for detailed tasks.",tags:["week 3"]}],checkpoint:"Follow the week 3 checkpoint."}))},
+  ]},
+  {phase:"Phase 2 — Build",weeks:[
+    {id:"w4",title:"EduNest: auth system",desc:"JWT login, registration, roles",days:Array(7).fill(null).map((_,i)=>({title:`EduNest Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w4d${i+1}t1`,time:"10:00–1:00",color:"teal-l",name:"Follow Week 4 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 4"]}],checkpoint:"Follow week 4 checkpoint."}))},
+    {id:"w5",title:"EduNest: core features",desc:"Course CRUD, enrollment, RBAC",days:Array(7).fill(null).map((_,i)=>({title:`Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w5d${i+1}t1`,time:"10:00–1:00",color:"teal-l",name:"Follow Week 5 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 5"]}],checkpoint:"Follow week 5 checkpoint."}))},
+    {id:"w6",title:"Redis + caching",desc:"Cache endpoints, sessions, invalidation",days:Array(7).fill(null).map((_,i)=>({title:`Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w6d${i+1}t1`,time:"10:00–1:00",color:"teal-l",name:"Follow Week 6 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 6"]}],checkpoint:"Follow week 6 checkpoint."}))},
+    {id:"w7",title:"AWS S3 file uploads",desc:"Upload materials, presigned URLs, boto3",days:Array(7).fill(null).map((_,i)=>({title:`Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w7d${i+1}t1`,time:"10:00–1:00",color:"teal-l",name:"Follow Week 7 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 7"]}],checkpoint:"Follow week 7 checkpoint."}))},
+    {id:"w8",title:"Docker",desc:"Containerize full stack — app + DB + Redis",days:Array(7).fill(null).map((_,i)=>({title:`Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w8d${i+1}t1`,time:"10:00–1:00",color:"teal-l",name:"Follow Week 8 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 8"]}],checkpoint:"Follow week 8 checkpoint."}))},
+  ]},
+  {phase:"Phase 3 — Ship & Apply",weeks:[
+    {id:"w9",title:"Deploy EduNest",desc:"Live on Render, cloud PostgreSQL",days:Array(7).fill(null).map((_,i)=>({title:`Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w9d${i+1}t1`,time:"10:00–1:00",color:"amber-l",name:"Follow Week 9 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 9"]}],checkpoint:"Follow week 9 checkpoint."}))},
+    {id:"w10",title:"GitHub + Resume",desc:"Portfolio-ready GitHub, resume with live link",days:Array(7).fill(null).map((_,i)=>({title:`Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w10d${i+1}t1`,time:"10:00–1:00",color:"amber-l",name:"Follow Week 10 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 10"]}],checkpoint:"Follow week 10 checkpoint."}))},
+    {id:"w11",title:"Start applying",desc:"LinkedIn, Wellfound, Internshala",days:Array(7).fill(null).map((_,i)=>({title:`Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w11d${i+1}t1`,time:"10:00–1:00",color:"amber-l",name:"Follow Week 11 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 11"]}],checkpoint:"Follow week 11 checkpoint."}))},
+    {id:"w12",title:"Interview prep",desc:"REST questions, SQL, system design basics",days:Array(7).fill(null).map((_,i)=>({title:`Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w12d${i+1}t1`,time:"10:00–1:00",color:"amber-l",name:"Follow Week 12 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 12"]}],checkpoint:"Follow week 12 checkpoint."}))},
+    {id:"w13",title:"Review + iterate",desc:"Fix gaps, keep applying, start project 2",days:Array(7).fill(null).map((_,i)=>({title:`Day ${i+1}`,focus:"See roadmap",tasks:[{id:`w13d${i+1}t1`,time:"10:00–1:00",color:"amber-l",name:"Follow Week 13 plan",desc:"Refer to the main 90-day roadmap.",tags:["week 13"]}],checkpoint:"Follow week 13 checkpoint."}))},
+  ]}
+];
+
+const STORAGE_KEY='devtracker_v3';
+let state=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
+let currentWeekId='w1';
+let currentDayIdx=0;
+
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+
+function getGlobalDayIndex(weekId,dayIdx){
+  let g=0;
+  for(const phase of PLAN){
+    for(const week of phase.weeks){
+      if(week.id===weekId) return g+dayIdx;
+      g+=week.days.length;
+    }
+  }
+  return 0;
+}
+
+function getDayStatus(week,dayIdx){
+  const TODAY=getToday();
+  const day=week.days[dayIdx];
+  const allDone=day.tasks.every(t=>state[t.id]);
+  const g=getGlobalDayIndex(week.id,dayIdx);
+  const scheduledDate=dateForGlobalDay(g);
+  const isPast=scheduledDate<TODAY;
+  const isToday=scheduledDate.getTime()===TODAY.getTime();
+  const isFuture=scheduledDate>TODAY;
+  return{allDone,isPast,isToday,isFuture,scheduledDate,g};
+}
+
+function getWeekProgress(week){
+  let done=0;
+  for(let d=0;d<week.days.length;d++){
+    if(week.days[d].tasks.every(t=>state[t.id])) done++;
+  }
+  return{done,total:week.days.length};
+}
+
+function getScheduleStatus(){
+  let behindDays=0,aheadDays=0;
+  for(const phase of PLAN){
+    for(const week of phase.weeks){
+      for(let d=0;d<week.days.length;d++){
+        const{allDone,isPast,isFuture}=getDayStatus(week,d);
+        if(isPast&&!allDone) behindDays++;
+        if(isFuture&&allDone) aheadDays++;
+      }
+    }
+  }
+  return{behindDays,aheadDays};
+}
+
+function getTotalStats(){
+  let total=0,done=0,days=0;
+  for(const phase of PLAN){
+    for(const week of phase.weeks){
+      for(const day of week.days){
+        for(const t of day.tasks){total++;if(state[t.id])done++;}
+        if(day.tasks.every(t=>state[t.id]))days++;
+      }
+    }
+  }
+  return{total,done,days};
+}
+
+function getCurrentWeek(){
+  for(const phase of PLAN){
+    for(const week of phase.weeks){
+      if(week.id===currentWeekId) return{week,phase};
+    }
+  }
+}
+
+function renderSidebar(){
+  const sb=document.getElementById('sidebar');
+  sb.innerHTML=`<div class="sidebar-header"><div class="sidebar-logo">Dev Tracker</div><div class="sidebar-sub">90-day backend roadmap</div></div>`;
+  for(const phase of PLAN){
+    const pg=document.createElement('div');
+    pg.innerHTML=`<div class="phase-label">${phase.phase}</div>`;
+    for(const week of phase.weeks){
+      const p=getWeekProgress(week);
+      const isDone=p.done===p.total;
+      const isActive=week.id===currentWeekId;
+      const btn=document.createElement('button');
+      btn.className=`week-btn${isActive?' active':''}${isDone?' done':''}`;
+      btn.innerHTML=`<span class="week-dot"></span>${week.title}<span class="week-progress-mini">${p.done}/${p.total}</span>`;
+      btn.onclick=()=>{currentWeekId=week.id;currentDayIdx=0;renderAll()};
+      pg.appendChild(btn);
+    }
+    sb.appendChild(pg);
+  }
+}
+
+function renderCalendar(week){
+  const TODAY=getToday();
+  const{behindDays,aheadDays}=getScheduleStatus();
+  const todayStr=TODAY.toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  let bannerHtml='';
+  if(behindDays>0){
+    bannerHtml=`<div class="schedule-banner behind">⚠ ${behindDays} day${behindDays>1?'s':''} behind schedule — catch up today.</div>`;
+  } else if(aheadDays>0){
+    bannerHtml=`<div class="schedule-banner ahead">🎯 ${aheadDays} day${aheadDays>1?'s':''} ahead of schedule — great momentum.</div>`;
+  } else {
+    bannerHtml=`<div class="schedule-banner ontrack">✓ On track — right where you should be.</div>`;
+  }
+
+  let calHtml=`<div class="cal-section"><div class="cal-label">Week schedule · Today: ${todayStr}</div><div class="cal-grid">`;
+  for(let d=0;d<week.days.length;d++){
+    const{allDone,isPast,isToday,isFuture,scheduledDate}=getDayStatus(week,d);
+    let cls='cal-day';
+    if(allDone) cls+=' cal-done';
+    else if(isToday) cls+=' cal-today';
+    else if(isPast) cls+=' cal-behind';
+    else cls+=' cal-future';
+    if(d===currentDayIdx) cls+=' cal-active-sel';
+    calHtml+=`<div class="${cls}" onclick="selectDay(${d})">
+      <div class="cal-date">${fmtDate(scheduledDate)}</div>
+      <div class="cal-dnum">D${d+1}</div>
+      <div class="cal-dot"></div>
+    </div>`;
+  }
+  calHtml+=`</div></div>`;
+  return bannerHtml+calHtml;
+}
+
+function renderMain(){
+  const{week,phase}=getCurrentWeek();
+  const main=document.getElementById('main');
+  const stats=getTotalStats();
+  const prog=getWeekProgress(week);
+  const pct=prog.total>0?Math.round((prog.done/prog.total)*100):0;
+
+  main.innerHTML=`
+    <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:6px">${phase.phase}</div>
+    <div class="week-header">
+      <div class="week-tag">${week.id.toUpperCase()}</div>
+      <div class="week-title">${week.title}</div>
+      <div class="week-desc">${week.desc}</div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat-card"><div class="stat-num">${stats.done}</div><div class="stat-label">tasks done</div></div>
+      <div class="stat-card"><div class="stat-num">${stats.days}</div><div class="stat-label">days complete</div></div>
+      <div class="stat-card"><div class="stat-num">${Math.round((stats.done/Math.max(stats.total,1))*100)}%</div><div class="stat-label">overall</div></div>
+    </div>
+    ${renderCalendar(week)}
+    <div class="progress-wrap">
+      <div class="progress-label"><span>Week — ${prog.done}/${prog.total} days</span><span>${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill${pct===100?' complete':''}" style="width:${pct}%"></div></div>
+    </div>
+    <div class="day-tabs">${week.days.map((day,i)=>{
+      const{allDone,isPast,isToday}=getDayStatus(week,i);
+      let cls='day-tab';
+      if(i===currentDayIdx) cls+=' active';
+      if(allDone) cls+=' day-done';
+      else if(isToday) cls+=' day-today';
+      else if(isPast) cls+=' day-behind';
+      return `<div class="${cls}" onclick="selectDay(${i})">D${i+1}${allDone?'<span style="font-size:10px;margin-left:3px">✓</span>':''}</div>`;
+    }).join('')}</div>
+    <div id="day-content"></div>`;
+  renderDay();
+}
+
+function renderDay(){
+  const TODAY=getToday();
+  const{week}=getCurrentWeek();
+  const day=week.days[currentDayIdx];
+  const{allDone,scheduledDate,isPast,isToday,isFuture}=getDayStatus(week,currentDayIdx);
+  const doneTasks=day.tasks.filter(t=>state[t.id]).length;
+  const pct=Math.round((doneTasks/day.tasks.length)*100);
+  let dateLabel=fmtDate(scheduledDate)+(isToday?' — today':isPast&&!allDone?' — overdue':allDone?' — done':isFuture?' — upcoming':'');
+  let badgeStyle=isPast&&!allDone?'background:var(--red-soft);color:var(--red);border-color:#5a1a1a':isToday?'background:var(--accent-soft);color:var(--accent);border-color:var(--accent-border)':allDone?'background:var(--green-soft);color:var(--green);border-color:#1a4a30':'';
+
+  let html=`
+    <div class="day-header" style="margin-bottom:16px">
+      <div class="day-num-h">Day ${currentDayIdx+1} of ${week.days.length}</div>
+      <div class="day-title-main">${day.title}</div>
+      <div style="margin-top:6px;display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+        <span class="day-focus-tag">${day.focus}</span>
+        <span class="day-date-badge" style="${badgeStyle}">${dateLabel}</span>
+      </div>
+    </div>
+    <div class="progress-wrap" style="margin-bottom:16px">
+      <div class="progress-label"><span>Day — ${doneTasks}/${day.tasks.length} tasks</span><span>${pct}%</span></div>
+      <div class="progress-bar"><div class="progress-fill${pct===100?' complete':''}" style="width:${pct}%"></div></div>
+    </div>`;
+
+  for(const task of day.tasks){
+    const done=!!state[task.id];
+    html+=`<div class="block-section">
+      <div class="block-time">${task.time}</div>
+      <div class="task-card ${task.color}${done?' done-card':''}" id="card-${task.id}">
+        <div class="task-top">
+          <div class="task-checkbox${done?' checked':''}" onclick="toggleTask('${task.id}')">${done?'✓':''}</div>
+          <div class="task-body">
+            <div class="task-name">${task.name}</div>
+            <div class="task-desc">${task.desc}</div>
+            <div class="tags">${task.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  html+=`<div class="checkpoint-box"><div class="cp-label">day checkpoint</div><div class="cp-text">${day.checkpoint}</div></div>
+    <div class="day-complete-banner${allDone?' show':''}" id="complete-banner">All tasks done — Day ${currentDayIdx+1} complete. Move to the next day.</div>`;
+
+  document.getElementById('day-content').innerHTML=html;
+}
+
+function toggleTask(id){state[id]=!state[id];save();renderAll()}
+function selectDay(idx){currentDayIdx=idx;renderMain()}
+function renderAll(){renderSidebar();renderMain()}
+renderAll();
+</script>
